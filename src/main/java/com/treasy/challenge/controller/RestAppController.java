@@ -9,10 +9,9 @@ import org.springframework.web.bind.annotation.RestController;
 @EnableAutoConfiguration
 @RequestMapping("/rest/saas")
 public class RestAppController {
-	
+
 	@RequestMapping(value = "/hi", method = RequestMethod.GET)
 	public String hi() {
 		return "hello there";
 	}
-	
 }
