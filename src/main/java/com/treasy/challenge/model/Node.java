@@ -10,28 +10,33 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 @Entity
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Node {
 	
 	@Id
 	@GeneratedValue
-	private Integer id;
+	private Long id;
 
 	private String code;
 
 	private String description;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "parentId", referencedColumnName = "id")
-	private Node parent;
-
 	private String detail;
 
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "parentId", referencedColumnName = "id")
+	private Node parent;
+	
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "parent")
 	private List<Node> children;
+
 }
