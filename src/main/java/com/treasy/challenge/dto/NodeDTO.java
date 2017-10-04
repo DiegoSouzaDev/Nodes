@@ -3,7 +3,7 @@ package com.treasy.challenge.dto;
 import lombok.Data;
 
 @Data
-public class NodeChildDTO {
+public class NodeDTO {
 	
 	private Long id;
 
