@@ -24,18 +24,27 @@ public class NodeService {
 		return convertToChildDTOList(repos.findByParentId(parentId));
 	}
 
-	public Long saveNode(final NodeDTO nodeDTO) {
-		return repos.save(convertToNode(nodeDTO)).getId();
+	public String saveOrUpdateNode(final NodeDTO nodeDTO) {
+		final Node node = repos.save(convertToNode(nodeDTO));
+		return generatePersistenceJsonReturn(node);
 	}
 
-	public Long updateNode(final NodeDTO nodeDTO) {
-		return repos.save(convertToNode(nodeDTO)).getId();
-	}
-	
+	// public String updateNode(final NodeDTO nodeDTO) {
+	// final Node node = repos.save(convertToNode(nodeDTO));
+	// return generatePersistenceJsonReturn(node);
+	// }
+	//
 	public void deleteNode(final Long id) {
 		repos.delete(id);
 	}
 
+	public String generatePersistenceJsonReturn(final Node node) {
+		final StringBuilder sb = new StringBuilder();
+		sb.append("{\"id\": ").append(node.getId()).append("}");
+		
+		return sb.toString();
+	}
+	
 	private List<NodeDTO> convertToChildDTOList(final List<Node> returnedNodeList) {
 		final List<NodeDTO> nodeChildDTOList = new ArrayList<>();
 		

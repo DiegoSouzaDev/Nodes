@@ -18,36 +18,36 @@ import com.treasy.challenge.service.NodeService;
 @EnableAutoConfiguration
 @RequestMapping("/saas")
 public class RestAppController {
-	
+
 	@Autowired
 	private NodeService service;
-
+	
 	@RequestMapping(value = "/node", method = RequestMethod.POST)
-	public Long createNode(@RequestBody final NodeDTO nodeDTO) {
-		return service.saveNode(nodeDTO);
+	public String createNode(@RequestBody final NodeDTO nodeDTO) {
+		return service.saveOrUpdateNode(nodeDTO);
 	}
-	
-	@RequestMapping(value = "/node", method = RequestMethod.PUT)
-	public Long updateNode(@RequestBody final NodeDTO nodeDTO) {
-		return service.updateNode(nodeDTO);
+
+	@RequestMapping(value = "/node", produces = "application/json", method = RequestMethod.PUT)
+	public String updateNode(@RequestBody final NodeDTO nodeDTO) {
+		return service.saveOrUpdateNode(nodeDTO);
 	}
-	
+
 	@RequestMapping(value = "/node/{parentId}", method = RequestMethod.GET, produces = "application/json")
 	public List<NodeDTO> findNodesByParentId(@PathVariable("parentId") final Long parentId) {
 		return service.findByParentId(parentId);
 	}
-	
+
 	@RequestMapping(value = "/node", method = RequestMethod.GET, produces = "application/json")
 	public List<Node> findAllNodes() {
 		return service.findEntireTree();
 	}
-	
+
 	@RequestMapping(value = "/node/{id}", method = RequestMethod.DELETE)
 	public String removeNode(@PathVariable("id") final Long id) {
 		service.deleteNode(id);
-
+		
 		return "";
-
+		
 	}
-
+	
 }
