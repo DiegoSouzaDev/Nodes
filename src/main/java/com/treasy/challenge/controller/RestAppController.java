@@ -45,8 +45,7 @@ public class RestAppController {
 	@RequestMapping(value = "/node/{id}", method = RequestMethod.DELETE)
 	public String removeNode(@PathVariable("id") final Long id) {
 		service.deleteNode(id);
-		
-		return "";
+		return "Nó excluido com sucesso";
 		
 	}
 	
