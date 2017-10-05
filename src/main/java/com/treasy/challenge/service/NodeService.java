@@ -28,12 +28,7 @@ public class NodeService {
 		final Node node = repos.save(convertToNode(nodeDTO));
 		return generatePersistenceJsonReturn(node);
 	}
-
-	// public String updateNode(final NodeDTO nodeDTO) {
-	// final Node node = repos.save(convertToNode(nodeDTO));
-	// return generatePersistenceJsonReturn(node);
-	// }
-	//
+	
 	public void deleteNode(final Long id) {
 		repos.delete(id);
 	}
@@ -54,7 +49,11 @@ public class NodeService {
 			nodeChildDTO.setCode(node.getCode());
 			nodeChildDTO.setDescription(node.getDescription());
 			nodeChildDTO.setDetail(node.getDetail());
-			nodeChildDTO.setHasChildren(!node.getChildren().isEmpty());
+			if (node.getChildren() == null) {
+				nodeChildDTO.setHasChildren(false);
+			} else {
+				nodeChildDTO.setHasChildren(!node.getChildren().isEmpty());
+			}
 			nodeChildDTO.setParentId(node.getParent().getId());
 
 			nodeChildDTOList.add(nodeChildDTO);
