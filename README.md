@@ -59,14 +59,14 @@ A aplicação deverá conter métodos REST para exibir a estrutura, adicionar, e
  * description: string
  * parentId: number
  * detail: string
- * children: array
- 
- ** id: number
- ** code: string
- ** description: string
- ** parentId: number
- ** detail: string
- ** children: array
+ * children: array [
+ + id: number
+ + code: string
+ + description: string
+ + parentId: number
+ + detail: string
+ + children: array [...]
+ ]
   
 *O atributo children é um array que contém todos os nós filhos daquele nó, ou seja, irá conter toda a hierarquia até o ultimo nível;*
 
@@ -76,15 +76,14 @@ A aplicação deverá conter métodos REST para exibir a estrutura, adicionar, e
 
 `GET` - `/node/{parentId}`
 **Response**
-*array*
-
-** id: number
-** code: string
-** description: string
-** parentId: number
-** detail: string 
-** hasChildren: boolean 
-
+array [
+* id: number
+* code: string
+* description: string
+* parentId: number
+* detail: string 
+* hasChildren: boolean 
+]
 ______
 ## Teste e Execução da aplicação.
 
