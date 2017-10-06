@@ -31,7 +31,7 @@ public class Node {
 	
 	private String detail;
 
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "parentId", referencedColumnName = "id")
 	private Node parent;
 	

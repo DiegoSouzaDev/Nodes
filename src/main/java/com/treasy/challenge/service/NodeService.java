@@ -49,13 +49,14 @@ public class NodeService {
 			nodeChildDTO.setCode(node.getCode());
 			nodeChildDTO.setDescription(node.getDescription());
 			nodeChildDTO.setDetail(node.getDetail());
+			
 			if (node.getChildren() == null) {
 				nodeChildDTO.setHasChildren(false);
 			} else {
 				nodeChildDTO.setHasChildren(!node.getChildren().isEmpty());
 			}
+
 			nodeChildDTO.setParentId(node.getParent().getId());
-			
 			nodeChildDTOList.add(nodeChildDTO);
 		}
 		return nodeChildDTOList;
@@ -77,7 +78,6 @@ public class NodeService {
 			parent.setId(nodeDTO.getParentId());
 			node.setParent(parent);
 		}
-
 		return node;
 	}
 }

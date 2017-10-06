@@ -2,11 +2,20 @@ package com.treasy.challenge;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.support.SpringBootServletInitializer;
 
 @SpringBootApplication
-public class SaasApplication {
-	
+public class SaasApplication extends SpringBootServletInitializer {
+
 	public static void main(String[] args) throws Exception {
 		SpringApplication.run(SaasApplication.class, args);
 	}
+	
+	@Override
+	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+		return application.sources(applicationClass);
+	}
+	
+	private static Class<SaasApplication> applicationClass = SaasApplication.class;
 }

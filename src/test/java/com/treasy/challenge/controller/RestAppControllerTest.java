@@ -6,8 +6,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.persistence.EntityNotFoundException;
@@ -18,6 +16,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -32,67 +31,88 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.treasy.challenge.dto.NodeDTO;
 import com.treasy.challenge.model.Node;
 import com.treasy.challenge.service.NodeService;
+import com.treasy.challenge.util.TestUtility;
 
 @RunWith(SpringRunner.class)
 @WebAppConfiguration
 @SpringBootTest
-public class RestAppControllerTest {
-	
+public class RestAppControllerTest extends TestUtility {
+
 	private MockMvc mockMvc;
-	
+
 	@Autowired()
 	private WebApplicationContext wac;
-	
+
 	@MockBean
 	private NodeService service;
-	
+
 	@Before
 	public void setup() throws Exception {
 		this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).build();
-
+		
 	}
-	
+
 	@Test
 	public void testFindNodesByParentId() throws Exception {
 		final List<NodeDTO> nodeDTOList = getNodeDTOList();
 		final String jsonExpected = "[{\"id\":10,\"code\":\"code\",\"description\":\"description\",\"detail\":\"detail\",\"parentId\":1,\"hasChildren\":true},{\"id\":11,\"code\":\"code\",\"description\":\"description\",\"detail\":\"detail\",\"parentId\":1,\"hasChildren\":false}]";
-
+		
 		when(service.findByParentId(1L)).thenReturn(nodeDTOList);
-
-		mockMvc.perform(get("/saas/node/1")).andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-				.andExpect(content().string(equalTo(jsonExpected)));
+		
+		mockMvc.perform(get("/saas/node/1"))
+		.andExpect(status().isOk())
+		.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+		.andExpect(content().string(equalTo(jsonExpected)));
 	}
-	
+
 	@Test
 	public void testFindAllNodes() throws Exception {
 		final List<Node> nodeList = getNewTree();
 		final String jsonExpected = "[{\"id\":1,\"code\":\"code1\",\"description\":\"description1\",\"detail\":\"detail1\",\"parent\":null,\"children\":[{\"id\":3,\"code\":\"code3\",\"description\":\"description3\",\"detail\":\"detail3\",\"parent\":1,\"children\":null},{\"id\":4,\"code\":\"code4\",\"description\":\"description4\",\"detail\":\"detail4\",\"parent\":1,\"children\":null},{\"id\":7,\"code\":\"code7\",\"description\":\"description7\",\"detail\":\"detail7\",\"parent\":1,\"children\":null}]},{\"id\":2,\"code\":\"code2\",\"description\":\"description2\",\"detail\":\"detail2\",\"parent\":null,\"children\":[{\"id\":5,\"code\":\"code5\",\"description\":\"description5\",\"detail\":\"detail5\",\"parent\":2,\"children\":null},{\"id\":6,\"code\":\"code6\",\"description\":\"description6\",\"detail\":\"detail6\",\"parent\":2,\"children\":null},{\"id\":8,\"code\":\"code8\",\"description\":\"description8\",\"detail\":\"detail8\",\"parent\":2,\"children\":null}]}]";
-
-		when(service.findEntireTree()).thenReturn(nodeList);
 		
-		mockMvc.perform(MockMvcRequestBuilders.get("/saas/node")).andExpect(status().isOk()).andExpect(content().string(equalTo(jsonExpected)));
+		when(service.findEntireTree()).thenReturn(nodeList);
+
+		mockMvc.perform(MockMvcRequestBuilders.get("/saas/node"))
+		.andExpect(status().isOk())
+		.andExpect(content().string(equalTo(jsonExpected)));
 	}
-	
+
 	@Test
 	public void testCreateNode() throws Exception {
 		final ObjectMapper mapper = new ObjectMapper();
-		
 		final NodeDTO dto = getNewNodeDTO(10L, "code10", "desc10", "dtl10", 1L, false);
 		final Node node = getNewNode(10L, "code10", "detail10", "description10");
 		final StringBuilder sb = new StringBuilder();
-
+		
 		final String jsonExpected = "{\"id\": 10}";
 		final String jsonReturn = sb.append("{\"id\": ").append(node.getId().toString()).append("}").toString();
-		
+
 		when(service.saveOrUpdateNode(dto)).thenReturn(jsonReturn);
-		
-		this.mockMvc
-				.perform(MockMvcRequestBuilders.post("/saas/node").accept(MediaType.APPLICATION_JSON_VALUE)
-						.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(dto)))
-				.andExpect(status().isOk()).andExpect(content().string(equalTo(jsonExpected)));
-		
+
+		this.mockMvc.perform(MockMvcRequestBuilders.post("/saas/node")
+				.accept(MediaType.APPLICATION_JSON_VALUE).header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsString(dto)))
+				.andExpect(status().isOk())
+				.andExpect(content().string(equalTo(jsonExpected)));
+
 	}
 
+	@Test
+	public void testDataIntegrityOnCreateNode() throws Exception {
+		final ObjectMapper mapper = new ObjectMapper();
+		final NodeDTO dto = getNewNodeDTO(10L, "code10", "desc10", "dtl10", 1L, false);
+		final String expectedMessage = "Não foi possivel o nó informado como 'parentId'";
+		
+		when(service.saveOrUpdateNode(dto)).thenThrow(DataIntegrityViolationException.class);
+
+		this.mockMvc
+				.perform(MockMvcRequestBuilders.post("/saas/node").accept(MediaType.APPLICATION_JSON_VALUE)
+				.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsString(dto)))
+				.andExpect(status().isBadRequest())
+				.andExpect(content().string(equalTo(expectedMessage)));
+	}
+	
 	@Test
 	public void testUpdateNode() throws Exception {
 		final ObjectMapper mapper = new ObjectMapper();
@@ -101,102 +121,53 @@ public class RestAppControllerTest {
 		final String jsonExpected = "{\"id\": 11}";
 		final StringBuilder sb = new StringBuilder();
 		final String jsonReturn = sb.append("{\"id\": ").append(node.getId().toString()).append("}").toString();
-
-		when(service.saveOrUpdateNode(dto)).thenReturn(jsonReturn);
 		
+		when(service.saveOrUpdateNode(dto)).thenReturn(jsonReturn);
+
 		this.mockMvc
 				.perform(MockMvcRequestBuilders.put("/saas/node").accept(MediaType.APPLICATION_JSON_VALUE)
-						.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(dto)))
-				.andExpect(status().isOk()).andExpect(content().string(equalTo(jsonExpected)));
-	}
-
-	@Test
-	public void testDeleteNode() throws Exception {
-		this.mockMvc.perform(MockMvcRequestBuilders.delete("/saas/node/1")).andExpect(status().isOk())
-				.andExpect(content().string(equalTo("Nó excluido com sucesso")));
+				.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsString(dto)))
+				.andExpect(status().isOk())
+				.andExpect(content().string(equalTo(jsonExpected)));
 	}
 	
+	@Test
+	public void testDeleteNode() throws Exception {
+		this.mockMvc.perform(MockMvcRequestBuilders.delete("/saas/node/1"))
+		.andExpect(status().isOk())
+		.andExpect(content().string(equalTo("")));
+	}
+
 	@Test
 	public void testEmptyResultWhenDeleteNode() throws Exception {
 		final ObjectMapper mapper = new ObjectMapper();
 		final NodeDTO dto = getNewNodeDTO(11L, "code11", "desc11", "dtl11", 0L, false);
 		final String expectedReturn = "Nó inexistente. Nenhum nó será removido";
-		
+
 		when(service.saveOrUpdateNode(dto)).thenThrow(EmptyResultDataAccessException.class);
-		
-		this.mockMvc
-				.perform(MockMvcRequestBuilders.put("/saas/node").accept(MediaType.APPLICATION_JSON_VALUE)
-						.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(dto)))
-				.andExpect(status().isBadRequest()).andExpect(content().string(equalTo(expectedReturn)));
+
+		this.mockMvc.perform(MockMvcRequestBuilders.put("/saas/node").accept(MediaType.APPLICATION_JSON_VALUE)
+				.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsString(dto)))
+				.andExpect(status().isBadRequest())
+				.andExpect(content().string(equalTo(expectedReturn)));
 	}
-	
+
 	@Test
 	public void testNodeEntityNotFoundToUpdate() throws Exception {
 		final ObjectMapper mapper = new ObjectMapper();
 		final NodeDTO dto = getNewNodeDTO(11L, "code11", "desc11", "dtl11", 0L, false);
 		final String expectedReturn = "Não foi possivel encontrar o nó a ser atualizado ou o nó informado como 'parentId'";
-		
+
 		when(service.saveOrUpdateNode(dto)).thenThrow(EntityNotFoundException.class);
-		
+
 		this.mockMvc
 				.perform(MockMvcRequestBuilders.put("/saas/node").accept(MediaType.APPLICATION_JSON_VALUE)
-						.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(dto)))
-				.andExpect(status().isBadRequest()).andExpect(content().string(equalTo(expectedReturn)));
-	}
-	
-	private Node getNewNode(final Long id, final String code, final String detail, final String description) {
-		final Node node = new Node();
-		node.setId(id);
-		node.setCode(code);
-		node.setDescription(description);
-		node.setDetail(detail);
-		return node;
-	}
-
-	private List<Node> getNewTree() {
-		final Node node1 = getNewNode(1l, "code1", "detail1", "description1");
-		final Node node2 = getNewNode(2l, "code2", "detail2", "description2");
-		final Node node3 = getNewNode(3l, "code3", "detail3", "description3");
-		final Node node4 = getNewNode(4l, "code4", "detail4", "description4");
-		final Node node5 = getNewNode(5l, "code5", "detail5", "description5");
-		final Node node6 = getNewNode(6l, "code6", "detail6", "description6");
-		final Node node7 = getNewNode(7l, "code7", "detail7", "description7");
-		final Node node8 = getNewNode(8l, "code8", "detail8", "description8");
-
-		node3.setParent(node1);
-		node4.setParent(node1);
-		node5.setParent(node2);
-		node6.setParent(node2);
-		node7.setParent(node1);
-		node8.setParent(node2);
-
-		node2.setChildren(Arrays.asList(node5, node6, node8));
-		node1.setChildren(Arrays.asList(node3, node4, node7));
-		final List<Node> nodeList = new ArrayList<Node>();
-		nodeList.add(node1);
-		nodeList.add(node2);
-		return nodeList;
-	}
-
-	public NodeDTO getNewNodeDTO(final Long id, final String code, final String description, final String detail, final Long parentId,
-			final boolean hasChildren) {
-		final NodeDTO nodeDTO = new NodeDTO();
-		nodeDTO.setId(id);
-		nodeDTO.setCode(code);
-		nodeDTO.setDescription(description);
-		nodeDTO.setDetail(detail);
-		if (parentId != null && parentId != 0L) {
-			nodeDTO.setParentId(parentId);
-		}
-		nodeDTO.setHasChildren(hasChildren);
-		return nodeDTO;
-	}
-
-	public List<NodeDTO> getNodeDTOList() {
-		final NodeDTO dto1 = getNewNodeDTO(10L, "code", "description", "detail", 1L, true);
-		final NodeDTO dto2 = getNewNodeDTO(11L, "code", "description", "detail", 1L, false);
-
-		return Arrays.asList(dto1, dto2);
+				.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsString(dto)))
+				.andExpect(status().isBadRequest())
+				.andExpect(content().string(equalTo(expectedReturn)));
 	}
 	
 }
