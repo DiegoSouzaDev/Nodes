@@ -17,7 +17,6 @@ A aplicação deverá conter métodos REST para exibir a estrutura, adicionar, e
 ### **Método para cadastrar um novo nó:**
 
 `POST` - `/node`
- 
  **Request**
  * code: string 
  * description: string
@@ -25,14 +24,12 @@ A aplicação deverá conter métodos REST para exibir a estrutura, adicionar, e
  * detail: string
  
  **Response**
- 
  * id: number
  
 
 ### **Método para atualizar nó**
 
 `PUT` - `/node`
-
 **Request**
 * id: number
 * code: string
@@ -41,16 +38,14 @@ A aplicação deverá conter métodos REST para exibir a estrutura, adicionar, e
 * detail: string
 
 **Response**
-
 * id: number
 
  
 ### **Método para buscar toda a estrutura:**
 
 `GET` - `/node`
- 
  **Response**
-* id: number
+ * id: number
  * code: string
  * description: string
  * parentId: number
@@ -70,9 +65,7 @@ A aplicação deverá conter métodos REST para exibir a estrutura, adicionar, e
 ### **Método para buscar todos os nós abaixo de um nó específico**
 
 `GET` - `/node/{parentId}`
-
 **Response**
-
 +array+
 ** id: number
 ** code: string
@@ -80,8 +73,6 @@ A aplicação deverá conter métodos REST para exibir a estrutura, adicionar, e
 ** parentId: number
 ** detail: string 
 ** hasChildren: boolean 
-
-
 
 ______
 ## Teste e Execução da aplicação.
@@ -116,7 +107,7 @@ Após isso o sistema passará a responder na URL http://{host}:{port}/SaaS-1.0
 
 **ENDPOINT**
 
-Considerando que o Tomcat está configurado na máquina local utilizando a porta 8080, as chamadas deverão acontecer conforme abaixo:
+Considerando que o Tomcat está configurado na máquina local utilizando a porta `8080`, as chamadas deverão acontecer conforme abaixo:
 ```
 PS: Substituir o **?** pelo id (numerico a ser consultado/removido)
 ```
@@ -137,4 +128,25 @@ DELETE http://localhost:8080/SaaS-1.0/saas/node/?
 ```
 
 Com a exceção das operações que enviam somente um parametro numerico via URL, as chamadas devem ser feitas passando os parametros via JSON, utilizando Content-type = application/json e o formato das informações conforme especificação
+
+Exemplo de JSON para criar um nó (POST):
+```
+{
+  "code": "c01",
+  "description": "primeiro nó",
+  "parentId": 0,
+  "detail": "primeiro nó cadastrado"
+}
+```
+
+Exemplo de JSON para atualizar um nó (PUT):
+```
+{
+  "id": 2,
+  "code": "d25",
+  "description": "filho do primeiro nó",
+  "parentId": 1,
+  "detail": "é filho do primeiro nó cadastrado"
+}
+```
 
