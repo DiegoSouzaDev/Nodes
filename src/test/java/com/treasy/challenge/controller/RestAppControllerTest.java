@@ -101,7 +101,7 @@ public class RestAppControllerTest extends TestUtility {
 	public void testDataIntegrityOnCreateNode() throws Exception {
 		final ObjectMapper mapper = new ObjectMapper();
 		final NodeDTO dto = getNewNodeDTO(10L, "code10", "desc10", "dtl10", 1L, false);
-		final String expectedMessage = "Não foi possivel o nó informado como 'parentId'";
+		final String expectedMessage = "Não foi possivel encontrar o nó informado como 'parentId'";
 		
 		when(service.saveOrUpdateNode(dto)).thenThrow(DataIntegrityViolationException.class);
 
