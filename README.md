@@ -12,6 +12,15 @@ Escrever o BackEnd de uma aplicação para representar e manipular uma estrutura
 
 A aplicação deverá conter métodos REST para exibir a estrutura, adicionar, editar e excluir os nós da árvore. 
 
+## Requisitos Técnicos
+
+• A aplicação deve ser construída utilizando `Java 8`;
+• Pode ser utilizada qualquer biblioteca ou componente do Java;
+• A persistência dos dados deve ser feita utilizando `Hibernate` e `MySQL`;
+• O `Hibernate` que deve gerar as tabelas e relacionamentos necessários no banco de dados ao subir a aplicação; 
+• A comunicação entre o backend e o frontend deve ser feita através de métodos `REST` utilizando `JSON`;
+• No final o projeto deve gerar um `WAR` que será testado no `Tomcat 9`;
+
 ## COMPORTAMENTOS ESPERADOS 
 
 ### **Método para cadastrar um novo nó:**
@@ -50,7 +59,8 @@ A aplicação deverá conter métodos REST para exibir a estrutura, adicionar, e
  * description: string
  * parentId: number
  * detail: string
- * children: array 
+ * children: array
+ 
  ** id: number
  ** code: string
  ** description: string
@@ -66,7 +76,8 @@ A aplicação deverá conter métodos REST para exibir a estrutura, adicionar, e
 
 `GET` - `/node/{parentId}`
 **Response**
-+array+
+*array*
+
 ** id: number
 ** code: string
 ** description: string
