@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.treasy.challenge.dto.NodeDTO;
+import com.treasy.challenge.exception.InvalidParentException;
+import com.treasy.challenge.exception.NoNodeToUpdateException;
 import com.treasy.challenge.model.Node;
 import com.treasy.challenge.service.NodeService;
 
@@ -21,13 +23,13 @@ public class RestAppController {
 	private NodeService service;
 	
 	@RequestMapping(value = "/node", method = RequestMethod.POST)
-	public String createNode(@RequestBody final NodeDTO nodeDTO) {
-		return service.saveOrUpdateNode(nodeDTO);
+	public String createNode(@RequestBody final NodeDTO nodeDTO) throws InvalidParentException {
+		return service.saveNode(nodeDTO);
 	}
 
 	@RequestMapping(value = "/node", produces = "application/json", method = RequestMethod.PUT)
-	public String updateNode(@RequestBody final NodeDTO nodeDTO) {
-		return service.saveOrUpdateNode(nodeDTO);
+	public String updateNode(@RequestBody final NodeDTO nodeDTO) throws NoNodeToUpdateException, InvalidParentException {
+		return service.updateNode(nodeDTO);
 	}
 
 	@RequestMapping(value = "/node/{parentId}", method = RequestMethod.GET, produces = "application/json")
@@ -45,9 +47,4 @@ public class RestAppController {
 		service.deleteNode(id);
 	}
 
-	@RequestMapping(value = "/}", method = RequestMethod.GET)
-	public String serverUp() {
-		return "Server Up and Running";
-	}
-	
 }

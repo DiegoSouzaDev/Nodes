@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.treasy.challenge.exception.InvalidParentException;
+import com.treasy.challenge.exception.NoNodeToUpdateException;
+
 @ControllerAdvice
 @RestController
 public class RequestExceptionHandler {
@@ -30,5 +33,17 @@ public class RequestExceptionHandler {
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
 	public String dataIntegrityHandler(DataIntegrityViolationException e) {
 		return "Não foi possivel encontrar o nó informado como 'parentId'";
+	}
+	
+	@ExceptionHandler(InvalidParentException.class)
+	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
+	public String invalidParentExceptionHandler(InvalidParentException e) {
+		return "Could not use the specified parentID";
+	}
+	
+	@ExceptionHandler(NoNodeToUpdateException.class)
+	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
+	public String updatebleNodeHandler(NoNodeToUpdateException e) {
+		return "There is no node related to the specified ID";
 	}
 }

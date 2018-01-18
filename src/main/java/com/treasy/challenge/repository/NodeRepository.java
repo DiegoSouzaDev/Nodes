@@ -15,4 +15,5 @@ public interface NodeRepository extends PagingAndSortingRepository<Node, Long> {
 	public List<Node> findEntireTree();
 
 	public List<Node> findByParentId(final Long parentId);
+	
 }

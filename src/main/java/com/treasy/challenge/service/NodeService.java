@@ -7,32 +7,55 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.treasy.challenge.dto.NodeDTO;
+import com.treasy.challenge.exception.InvalidParentException;
+import com.treasy.challenge.exception.NoNodeToUpdateException;
 import com.treasy.challenge.model.Node;
 import com.treasy.challenge.repository.NodeRepository;
 
 @Service
 public class NodeService {
-	
+
 	@Autowired
 	private NodeRepository repos;
-	
+
 	public List<Node> findEntireTree() {
 		return repos.findEntireTree();
 	}
-	
+
 	public List<NodeDTO> findByParentId(final Long parentId) {
 		return convertToChildDTOList(repos.findByParentId(parentId));
 	}
+
+	public String saveNode(final NodeDTO nodeDTO) throws InvalidParentException {
+		Node node;
+		if (hasValidParent(nodeDTO)) {
+			node = repos.save(convertToNode(nodeDTO));
+		} else {
+			throw new InvalidParentException();
+		}
+		return generatePersistenceJsonReturn(node);
+	}
 	
-	public String saveOrUpdateNode(final NodeDTO nodeDTO) {
-		final Node node = repos.save(convertToNode(nodeDTO));
+	public String updateNode(final NodeDTO nodeDTO) throws NoNodeToUpdateException, InvalidParentException {
+		Node node;
+
+		if (hasValidParent(nodeDTO)) {
+			node = repos.findOne(nodeDTO.getId());
+			if (node != null) {
+				node = repos.save(convertToNode(nodeDTO));
+			} else {
+				throw new NoNodeToUpdateException();
+			}
+		} else {
+			throw new InvalidParentException();
+		}
 		return generatePersistenceJsonReturn(node);
 	}
 
 	public void deleteNode(final Long id) {
 		repos.delete(id);
 	}
-	
+
 	public String generatePersistenceJsonReturn(final Node node) {
 		final StringBuilder sb = new StringBuilder();
 		sb.append("{\"id\": ").append(node.getId()).append("}");
@@ -49,7 +72,7 @@ public class NodeService {
 			nodeChildDTO.setCode(node.getCode());
 			nodeChildDTO.setDescription(node.getDescription());
 			nodeChildDTO.setDetail(node.getDetail());
-			
+
 			if (node.getChildren() == null) {
 				nodeChildDTO.setHasChildren(false);
 			} else {
@@ -61,18 +84,18 @@ public class NodeService {
 		}
 		return nodeChildDTOList;
 	}
-	
+
 	public Node convertToNode(final NodeDTO nodeDTO) {
 		final Node node = new Node();
-		
+
 		node.setCode(nodeDTO.getCode());
 		node.setDescription(nodeDTO.getDescription());
 		node.setDetail(nodeDTO.getDetail());
-		
+
 		if (nodeDTO.getId() != null) {
 			node.setId(nodeDTO.getId());
 		}
-		
+
 		if (nodeDTO.getParentId() != null && nodeDTO.getParentId() != 0) {
 			final Node parent = new Node();
 			parent.setId(nodeDTO.getParentId());
@@ -80,4 +103,9 @@ public class NodeService {
 		}
 		return node;
 	}
+
+	public Boolean hasValidParent(final NodeDTO nodeDTO) {
+		return nodeDTO.getParentId() == null || (nodeDTO.getId() != nodeDTO.getParentId());
+	}
+
 }
